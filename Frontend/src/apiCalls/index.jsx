@@ -2,7 +2,7 @@ import axios from "axios";
 
 
 export const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000",   // 👈 backend
+  baseURL: "https://textora-backend-2ggr.onrender.com",   // 👈 backend
   headers: {
     "Content-Type": "application/json"
   }
