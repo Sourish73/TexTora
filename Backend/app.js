@@ -8,12 +8,15 @@ const chatRouter = require('./controllers/chatController');
 const messageRouter = require('./controllers/messsageController');
 
 const app = express();
-app.use(cors());
-app.use(express.json(
-  {
-    limit:"50mb"
-  }
-));
+
+app.use(cors({
+  origin: "https://textora.onrender.com",
+  credentials: true,
+}));
+
+app.use(express.json({
+  limit: "50mb"
+}));
 
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
@@ -25,67 +28,64 @@ const onlineUser = [];
 
 const io = require('socket.io')(server, {
   cors: {
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST']
+    origin: "https://textora.onrender.com",
+    methods: ["GET", "POST"],
+    credentials: true,
   }
 });
 
 io.on('connection', socket => {
   
-   socket.on('join-room',userid =>{
+   socket.on('join-room', userid => {
     socket.join(userid);
    })
 
-   socket.on('send-message',(message)=>{
-    console.log('MESSAGE RECEIVED AT SERVER:',message);
+   socket.on('send-message', (message) => {
+    console.log('MESSAGE RECEIVED AT SERVER:', message);
     io
     .to(message.members[0])
     .to(message.members[1])
     .emit('receive-message', message);
 
-        io
+    io
     .to(message.members[0])
     .to(message.members[1])
     .emit('set-message-count', message);
-
-    
    })
 
-   socket.on('clear-unread-messages',data=>{
+   socket.on('clear-unread-messages', data => {
     io
     .to(data.members[0])
     .to(data.members[1])
-    .emit('message-count-cleared',data);
+    .emit('message-count-cleared', data);
    })
 
    socket.on('user-typing', (data) => {
-        io
-        .to(data.members[0])
-        .to(data.members[1])
-        .emit('started-typing', data)
-    })
-
-        socket.on('user-stopped-typing', (data) => {
-        io
-        .to(data.members[0])
-        .to(data.members[1])
-        .emit('stopped-typing', data)
-    })
-
-   socket.on('user-login',userId =>{
-    if(!onlineUser.includes(userId)){
-      onlineUser.push(userId);
-    }
-    socket.emit('online-users',onlineUser);
+    io
+    .to(data.members[0])
+    .to(data.members[1])
+    .emit('started-typing', data)
    })
 
-   socket.on('user-offline',userId =>{
-onlineUser.splice(onlineUser.indexOf(userId),1);
-    io.emit('online-users-updated',onlineUser);
+   socket.on('user-stopped-typing', (data) => {
+    io
+    .to(data.members[0])
+    .to(data.members[1])
+    .emit('stopped-typing', data)
+   })
+
+   socket.on('user-login', userId => {
+    if (!onlineUser.includes(userId)) {
+      onlineUser.push(userId);
+    }
+    socket.emit('online-users', onlineUser);
+   })
+
+   socket.on('user-offline', userId => {
+    onlineUser.splice(onlineUser.indexOf(userId), 1);
+    io.emit('online-users-updated', onlineUser);
    })
 
 });
-
-
 
 module.exports = server;
