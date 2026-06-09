@@ -212,15 +212,6 @@ Rendered in chat for both users via Socket.IO
 
 ---
 
-## 🚀 Roadmap / Future Improvements
-
-- [ ] Group chat support
-- [ ] Message read receipts (double tick)
-- [ ] Typing indicators
-- [ ] Push notifications (Web Push / PWA)
-- [ ] Video/audio file sharing
-- [ ] Dark mode toggle
-- [ ] Message search
 
 ---
 
