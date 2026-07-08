@@ -19,6 +19,15 @@ export const createNewChat = async ( members ) => {
     }
 }
 
+export const createGroupChat = async ( payload ) => {
+    try{
+        const response = await axiosInstance.post( '/api/chat/create-new-chat', payload);
+        return response.data;
+    }catch(error){
+        return error;
+    }
+}
+
 export const clearUnreadMessageCount = async ( chatId ) => {
     try{
         const response = await axiosInstance.post('/api/chat/clear-unread-message', { chatId: chatId });

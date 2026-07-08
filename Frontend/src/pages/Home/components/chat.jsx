@@ -148,9 +148,14 @@ function ChatArea({ socket }) {
     );
   }
 
-  const selectedUser = selectedChat.members.find(
+  const isGroupChat = selectedChat.isGroupChat;
+  const selectedUser = !isGroupChat ? selectedChat.members.find(
     m => m._id !== user._id
-  );
+  ) : null;
+  
+  const displayName = isGroupChat ? selectedChat.chatName : `${selectedUser?.firstname} ${selectedUser?.lastname}`;
+  const initial = isGroupChat ? selectedChat.chatName?.substring(0, 2).toUpperCase() : selectedUser?.firstname?.[0];
+  const statusText = isGroupChat ? `${selectedChat.members.length} members` : (isTyping ? "Typing..." : "Online");
 
   // ===================== SEND MESSAGE =====================
 
@@ -284,12 +289,12 @@ function ChatArea({ socket }) {
       <div className="app-chat-area-header">
         <div className="chat-header-user">
           <div className="user-avatar">
-            {selectedUser?.firstname?.[0]}
+            {initial}
           </div>
           <div className="user-info">
-            <h3>{selectedUser?.firstname} {selectedUser?.lastname}</h3>
+            <h3>{displayName}</h3>
             <span className="user-status">
-              {isTyping ? "Typing..." : "Online"}
+              {statusText}
             </span>
           </div>
         </div>
@@ -312,6 +317,14 @@ function ChatArea({ socket }) {
               >
                 <div className={isCurrentUser ? "send-message" : "received-message"}>
                   <div className="message-content">
+                    {!isCurrentUser && isGroupChat && (
+                      <div className="message-sender-name" style={{fontSize: '11px', color: '#a0a0a0', marginBottom: '4px', fontWeight: 'bold'}}>
+                        {(() => {
+                           const sender = selectedChat.members.find(mem => mem._id === m.sender);
+                           return sender ? `${sender.firstname} ${sender.lastname}` : 'Unknown';
+                        })()}
+                      </div>
+                    )}
                     {m.text && <div className="message-text">{m.text}</div>}
                     {m.image && (
                       <div className="message-image-container">

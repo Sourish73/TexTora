@@ -13,6 +13,18 @@ const chatSchema = new mongoose.Schema({
     unreadMessageCount : {
         type : Number,
         default : 0
+    },
+    isGroupChat: {
+        type: Boolean,
+        default: false
+    },
+    chatName: {
+        type: String,
+        trim: true
+    },
+    admin: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users"
     }
 }, {timestamps:true});
 

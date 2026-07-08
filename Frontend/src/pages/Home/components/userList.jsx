@@ -237,28 +237,62 @@ function UsersList({ searchKey, socket, onlineUser }) {
     <>
       {Array.isArray(dataToRender) &&
         dataToRender.map((obj) => {
+          const isGroupChat = obj.isGroupChat;
           let user = obj;
-          if (obj.members) {
-            user = obj.members.find((mem) => mem._id !== currentUser._id);
+          let displayPic = null;
+          let displayName = '';
+          let displayEmail = '';
+          let initials = '';
+
+          if (isGroupChat) {
+             displayName = obj.chatName || "Group Chat";
+             displayEmail = `${obj.members.length} members`;
+             initials = displayName.substring(0, 2).toUpperCase();
+          } else {
+            if (obj.members) {
+              user = obj.members.find((mem) => mem._id !== currentUser._id);
+            }
+            if (!user) return null;
+            
+            displayName = formatName(user);
+            displayEmail = user.email;
+            displayPic = user.profilePic;
+            initials = `${user.firstname?.charAt(0)?.toUpperCase() || ''}${user.lastname?.charAt(0)?.toUpperCase() || ''}`;
           }
 
-          if (!user) return null;
-
-          const isOnline = onlineUser.includes(user._id);
-          const isSelected = IsSelectedChat(user);
+          const isOnline = !isGroupChat && user && onlineUser.includes(user._id);
+          // if it's a chat (obj.members exists), check if it's selected. 
+          // For search results, check if the user is selected.
+          let isSelected = false;
+          if (obj._id && obj.members) {
+             isSelected = selectedChat && selectedChat._id === obj._id;
+          } else {
+             isSelected = IsSelectedChat(user);
+          }
+          
           const chatExists = obj.members;
+          // For group chats, use the chat's ID, else user's ID to open
+          const idToOpen = chatExists ? obj._id : user._id;
+          // We need a custom openChat for group chats because openChat expects a userId right now
+          const handleOpenChat = () => {
+             if (chatExists) {
+                dispatch(setSelectedChat(obj));
+             } else {
+                openChat(user._id);
+             }
+          };
 
           return (
             <div
               className="user-search-filter"
-              onClick={() => openChat(user._id)}
-              key={user._id}
+              onClick={handleOpenChat}
+              key={chatExists ? obj._id : user._id}
             >
               <div className={isSelected ? "selected-user" : "filtered-user"}>
                 <div className="filter-user-display">
-                  {user.profilePic ? (
+                  {displayPic && !isGroupChat ? (
                     <img
-                      src={user.profilePic}
+                      src={displayPic}
                       alt="Profile Pic"
                       className="user-profile-image"
                       style={isOnline ? { border: "#82e0aa 7px solid" } : {}}
@@ -272,14 +306,13 @@ function UsersList({ searchKey, socket, onlineUser }) {
                       }
                       style={isOnline ? { border: "#82e0aa 7px solid" } : {}}
                     >
-                      {user.firstname?.charAt(0)?.toUpperCase()}
-                      {user.lastname?.charAt(0)?.toUpperCase()}
+                      {initials}
                     </div>
                   )}
 
                   <div className="filter-user-details">
                     <div className="user-display-name">
-                      {formatName(user)}
+                      {displayName}
                       {isOnline && (
                         <span
                           style={{
@@ -293,16 +326,23 @@ function UsersList({ searchKey, socket, onlineUser }) {
                       )}
                     </div>
                     <div className="user-display-email">
-                      {chatExists
-                        ? getlastMessage(user._id) || user.email
-                        : user.email}
+                      {chatExists && !isGroupChat
+                        ? getlastMessage(user._id) || displayEmail
+                        : chatExists && isGroupChat 
+                        ? (obj.lastMessage?.text?.substring(0, 25) || displayEmail)
+                        : displayEmail}
                     </div>
                   </div>
 
                   <div>
-                    {getUnreadMessageCount(user._id)}
+                    {chatExists ? (
+                      <div className="unread-message-counter">
+                         {obj.unreadMessageCount > 0 && obj.lastMessage?.sender !== currentUser._id ? Math.min(obj.unreadMessageCount, 99) : ""}
+                      </div>
+                    ) : getUnreadMessageCount(user._id)}
+                    
                     <div className="last-message-timestamp">
-                      {chatExists ? getLastMessageTimeStamp(user._id) : ""}
+                      {chatExists ? (obj.lastMessage ? moment(obj.lastMessage.createdAt).format("hh:mm A") : "") : ""}
                     </div>
                   </div>
 
