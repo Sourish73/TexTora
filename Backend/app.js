@@ -10,7 +10,7 @@ const messageRouter = require('./controllers/messsageController');
 const app = express();
 
 app.use(cors({
-  origin: "https://textora.onrender.com",
+  origin: ["https://textora.onrender.com", "https://textora-frontend.onrender.com", "http://localhost:5173"],
   credentials: true,
 }));
 
@@ -28,7 +28,7 @@ const onlineUser = [];
 
 const io = require('socket.io')(server, {
   cors: {
-    origin: "https://textora.onrender.com",
+    origin: ["https://textora.onrender.com", "https://textora-frontend.onrender.com", "http://localhost:5173"],
     methods: ["GET", "POST"],
     credentials: true,
   }
