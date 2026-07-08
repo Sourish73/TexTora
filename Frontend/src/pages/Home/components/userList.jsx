@@ -335,11 +335,11 @@ function UsersList({ searchKey, socket, onlineUser }) {
                   </div>
 
                   <div>
-                    {chatExists ? (
+                    {chatExists && obj.unreadMessageCount > 0 && obj.lastMessage?.sender !== currentUser._id ? (
                       <div className="unread-message-counter">
-                         {obj.unreadMessageCount > 0 && obj.lastMessage?.sender !== currentUser._id ? Math.min(obj.unreadMessageCount, 99) : ""}
+                         {Math.min(obj.unreadMessageCount, 99)}
                       </div>
-                    ) : getUnreadMessageCount(user._id)}
+                    ) : !chatExists ? getUnreadMessageCount(user._id) : null}
                     
                     <div className="last-message-timestamp">
                       {chatExists ? (obj.lastMessage ? moment(obj.lastMessage.createdAt).format("hh:mm A") : "") : ""}
